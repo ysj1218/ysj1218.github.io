@@ -1,0 +1,130 @@
+一. react生命周期：
+
+	react生命周期根据广义定义描述可以分为挂载，渲染和卸载这几个阶段，当渲染后的组件需要更新时，我们会重新去渲染组件，直至卸载。
+	因此可以把生命周期分为两类：
+		1. 当组件在挂载或卸载时；
+			组件挂载：
+				(1) props类型检查 和 默认类型。被声明为静态属性，表示从类外面也可以访问他们，比如可以 App.propTypes和App.defaultProps。
+					static propTypes = {}
+					static defaultProps = {}
+					
+				(2) constructor(props) {
+						super(props);
+						this.state = {}
+					}
+					
+				(3) 会在render方法之前执行，代表渲染前的时刻，如果在该生命周期函数中执行setState方法，组件会更新state，但组件只渲染一次，这是无意义的执行，初始化的state可以放在this.state中
+					componentWillMount() {}
+				
+				(4) 会在render方法之后执行，代表渲染后的时刻， 如果在该生命周期函数中执行setState方法，组件会再次更新，不过在初始化过程就渲染了两次组件，对性能有影响。
+					componentDidMount() {}
+				
+			    (5) render() {
+			    		return (
+			      		<div className="App">123</div>
+			    		);
+			 	 	}
+			 	 	
+			组件卸载：
+				在该生命周期函数里经常执行一些清理方法，如事件回收或者清除定时器。
+					componentWillUnmount() {}
+		
+		2. 数据更新过程：
+			更新过程指的是父组件向下传递props或组件自身执行setState方法时发生的一系列更新动作。
+			如果组件自身的state更新了，那么会依次执行shouldComponentUpdate，componentWillUpdate，ComponentDidUpdate
+			
+				(1) componentWillReceiveProps(nextProps) {}
+					如果组件是由父组件更新props而更新的，那么在shouldComponentUpdate之前会先执行componentWillReceiveprops方法。此方法可以作为react在props传入后，渲染之前setState的，在此方法中
+					调用setState是不会二次渲染的。
+				
+				(2) shouldComponentUpdate(nextProps, nextState) {}	  
+					该生命钩子是一个特别的方法，它接收需要更新的props和state，让开发者增加必要的条件判断，让其在需要时更新，不需要时不更新。当返回false时，组件不再向下执行生命周期方法。
+					它的本质是用来进行正确的组件渲染。
+					但是无状态组件没有生命周期方法，所以也就没有shouldComponentUpdate，当渲染到该类组件时，每次无论需不需要渲染，它都会重新被渲染。因此可以使用Recompose库的pure方法：
+						const OptimizedComponent = pure(ExpensiveComponent);
+					pure方法的作用：将无状态组件转换成class语法加上PureRender后的组件。
+					
+				(3) componentWillUpdate(nextProps, nextState) {}	componentrDidUpdate(prevProps, prevState) {}
+					代表更新过程中渲染前后的时刻。
+
+二. React与DOM:
+	
+	1. ReactDOM: findDOMNode, unmountComponentAtNode render
+		(1) findDOMNode: 获取真实dom元素
+			DOMElement findDOMNode(ReactComponent component);
+			当组件被渲染到DOM中后，findDOMNode返回该React组件实例相应的DOM节点，它可以用于获取表单的value以及用于dom的测量。如果在render中返回null，那么findDOMNode也返回null,它只对已经挂载的组件有效。
+			componentDidMount() {
+				const dom = ReactDOM.findDOMNode(this); //this为当前组件的的实例
+				console.log(dom);
+			}
+			
+		(2) unmountComponentAtNode:
+			很少使用，来进行卸载操作。
+			
+		(3) render:
+			把react渲染的虚拟DOM渲染到浏览器中的DOM当中。
+			ReactDOM.render(<App />, document.getElementById('root'));  将App组件渲染到浏览器中id为root的Dom元素中。
+			
+	2. refs: 在react中获取到dom元素。
+		为了防止内存泄露，当卸载组件的时候，组件中的所有refs就会变为null.
+		
+		注意：
+			findDOMNode和refs都不能用于无状态组件中，无状态组件挂载时只是方法调用，没有新建实例。
+			
+三. react的事件代理机制：
+	react绑定事件不会绑定在真实的dom节点上，而是绑定在最外层的结构上，使用一个统一的事件监听器。利用事件委托。简化了事件处理和回收机制，提升效率。
+	
+	当在react中使用原生事件时，在componentDidMount()生命周期函数中通过addEventListener()方法添加的，一定要在componentWillUnmount()生命周期函数
+	中通过removeEventListener()方法移除,否则会造成内存泄露。
+	
+	在react中尽量不要将原生事件与合成事件一起使用，因为合成事件的事件绑定并不是直接绑定到dom元素上的，而是所有的事件都绑定到最外层的dom结构上，通过
+	事件委托的方式来执行函数，所以可能导致你的一些功能不能实现。
+	
+	阻止react事件冒泡的行为只能用于react合成事件系统中，且没有办法阻止原生事件的冒泡。反之，在原生事件中的组织冒泡行为，却可以阻止react合成事件的传播。
+	
+	对比react合成事件与js原生事件：
+		事件传播与阻止事件传播：react中没有捕获阶段，阻止事件冒泡可以使用e.preventDefault()。
+		事件类型：react合成事件的事件类型是JavaScript原生事件类型的一个子集。
+		事件绑定方式
+		事件对象
+
+四. 表单：
+	受控组件  非受控组件
+
+五. 样式处理：
+	1. 基本样式设置：style={{ display: nnoe }} 或者提前声明样式对象cssStyle, style={ cssStyle } 或者 className="类名"
+	2. 样式中的像素值px会自动添加，可以不写;
+	3. css modules(css模块化)：依旧使用css，但是使用JavaScript来管理样式依赖。css modules能最大化的结合现有css生态和javascript模块化能力，发布时依旧编译出单独的JavaScript和css文件。
+		
+		css modules使用：加入局部作用域和模块依赖。使得每个组件中的样式只能在当前组件中有效。即使两个组件中有css类名命名一致，也不会彼此受影响。
+		
+			CSS Modules提供了各种插件，支持不同的构建工具。但是在react项目中我习惯使用webpack的css-loader插件，因为它对CSS Modules的支持最好，而且容易使用。
+			实现了：(1) 解决了命名冲突和全局污染的问题。 (2) (3) (4) 
+			局部作用域：
+			设置的话需要在webpack.config.js中配置module: true, 然后在react组件中通过<div className={style['class1']}>Child4</div>来设置类名。构建工具会将类名编译成一个哈希
+			字符串这样就产生了一个局部的作用域，产生一个独一无二的类名。引入的css文件中的类名也被编译。
+			
+			全局作用域：
+			允许使用 ':global(.classname)' 的语法，声明一个全局规则，凡是这样声明的class都不会被编译成哈希字符串。类名使用普通的class的写法就会引用全局class。
+			class的组合：一个选择器可以继承另一个选择器的规则。使用composes:要继承的类名; 来继承想要继承的样式。
+				例如：.class1 { font-size: 100px; }
+					.class2 { composes:class1; background: #87CEEB; } class2继承了class1的样式
+			
+			一个css文件继承另一个css文件中的样式：.title { composes: title from '../App.css'; }	
+			支持使用变量：需要安装PostCSS和postcss-modules-values。
+			webpack.config.js中需要添加postcss-loader.相关配置可以参考webpack官网postcss-loader的相关配置资料。
+			使用：
+				在colors.css里面定义变量：
+					@value blue: #0c77f8;
+					@value red: #f00;
+					@value green: #aaf200;
+				在组件中样式表中可以引用这些变量：
+					@value colors: "./colors.css";
+					@value blue, red, green from colors;
+					
+六. 组件通信：
+	
+				
+				
+				
+		

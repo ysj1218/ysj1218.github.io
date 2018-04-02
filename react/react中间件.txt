@@ -1,0 +1,52 @@
+react中间件：
+	redux提供了一个中间件机制，可以使用第三方提供的中间件或者自己编写的一个中间件来对redux的功能进行增强，比如可以使用redux-logger这个中间件来记录action以及每次action前后的state，
+	使用redux-undo来取消重做action，使用redux-persist-store来对store进行持久化。
+	
+	1. redux-thunk:
+		实现异步触发action，使用redux-thunk这个中间件来实现。
+			(1) 先安装redux-thunk.  npm install redux-thunk --save
+			(2) 创建store.js的时候使用applyMiddleware挂载中间件. 在创建store的时候，我们将reduxthunk使用Redux.applyMiddleware方法进行包装后传给Redux.createStore的第二个参数。
+				例： import { createStore, applyMiddleware } from 'redux';
+					import reducer from './reducer';
+					import thunk from 'redux-thunk';
+					const store = createStore(reducer, applyMiddleware(thunk));
+					export default store;
+					
+			原来的store.dispatch()方法只能接收一个普通的action对象作为参数，当我们加入了redux-thunk这个中间件之后，store.dispatch()方法还可以接收一个方法作为参数，这个方法会接
+			收两个参数，第一个是dispatch，等同于store.dispatch, 第二个是getState，等同于store.getState。
+			
+			redux-thunk源码：【其实就是一个多层嵌套返回函数的函数，使用箭头的写法在函数式编程中叫做柯里化】
+				function createThunkMiddleware(extraArgument) {
+					return ({ dispatch, getState }) => next => action => {
+						if(typeof action === 'function') {
+							return action(dispatch, getState, extraArgument); 达到自由控制action触发流程的一个目的。
+						}
+						return next(action);
+					};
+				}
+				const thunk = createThunkMiddleware();
+				thunk.withExtraArgument = createThunkMiddleware;
+				export default thunk;
+				
+				参数next是一个方法，这个方法的作用是通知下一个Redux中间件对这次的action进行处理。如果一个中间件中没有执行next(action), 则action会停止向后续的中间件传递，并阻止
+				reducer的执行。store不会因为本次的action而更新。
+				
+				
+				可以理解为：
+				function createThunkMiddleware(extraArgument) {
+					function({dispatch, getState}) {
+						return function(next) {
+							return function(action) {
+								if(typeof action === 'function') {
+									return action(dispatch, getState, extraArgument);
+								}
+							}
+						}
+					}
+				}
+			
+			实际应用：
+				比如根据一个userId来调用后端接口获取这个用户的详细信息并存储在redux store中。
+	2. redux-promise：
+		
+	
