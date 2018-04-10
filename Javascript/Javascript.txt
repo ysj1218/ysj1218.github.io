@@ -41,7 +41,6 @@ URN：统一资源命名。通过名字标识资源。
 (7)OPTIONS：允许客户端查看服务器的性能。
 (8)TRACE：回显服务器收到的请求，用于测试或诊断。
 6. http工作原理
-
 二．Javascript中延长作用域链
 try-catch语句的catch块
 With语句
@@ -60,7 +59,7 @@ Selection对象和range对象：
 四．Require.js模块化开发
 1.require.js的作用：
 (1)实现js文件的异步加载，避免网页失去响应； 
-(2) 管理模块之间的依赖性，便于	代码的编写和维护。
+(2) 管理模块之间的依赖性，便于代码的编写和维护。
 2.使用：
 <script src="js/require.js" defer="defer" async="true" data-main="js/main"></script>
 引入require.js文件;  其中async属性表明这个文件需要异步加载，避免网页失去响应，IE不支持这个属性，所以用defer属性代替;  data-main: 指定网页程序的主模块 -> [ 整个网页的入口代码 ]。
@@ -332,4 +331,46 @@ for(var prop in o) {
 3. 继承：
 	原型链继承
 	借用构造函数
+七.跨域解决
+1.跨域是指一个域下的文档或脚本试图去请求另一个域下的资源，这里跨域是广义的。
+广义的跨域：
+资源跳转
+资源嵌入
+脚本请求
+2.同源策略：
+协议名+域名+端口号三者相同，有任一项不同都不叫同源。
+同源策略限制以下行为：
+Cookie，localstorage和indexDB无法读取。
+Dom和js对象无法获取
+Ajax请求不能发送
+3.跨域解决办法：
+(1) Jsonp
+(2) Document.domain+iframe跨域
+(3) location.hash+iframe
+(4) postMessage跨域
+(5) cors
+(6) ngnix代理跨域
+(7) nodeJs中间件代理
+(8) websocket协议跨域
+
+八.web前端自动化构建工具
+1.Grunt
+(1) 安装nodeJS ( grunt依赖nodeJS v0.8.8及以上版本；奇数版本号的版本被认为是不稳定的版本 )
+(2) 安装grunt-CLI：npm install grunt-cli -g
+npm install grunt --save-dev
+文件目录：
+ 
+Gruntfile.js是grunt的配置文件。Gruntfile.js中的配置如下：
+
+(3)使用:
+1)uglify插件，压缩JavaScript代码【https://www.npmjs.com/package/grunt-contrib-uglify】
+npm?install?grunt-contrib-uglify?--save-dev
+
+2)Jshint插件，检查JavaScript语法错误
+3)csslint插件，检查css语法错误
+4)concat
+5)cssmin
+6)watch
+2.Gulp
+
 
