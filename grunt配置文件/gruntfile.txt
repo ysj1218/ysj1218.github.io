@@ -1,0 +1,73 @@
+//包装函数  
+module.exports = function(grunt){  
+    //任务配置，所有插件的配置信息  
+    grunt.initConfig({  
+        //获取package.json的信息  
+        pkg:grunt.file.readJSON('package.json'),  
+        //uglify插件的配置信息  
+        uglify:{  
+            options:{  
+                stripBanners:true,  
+                banner:'/*!<%=pkg.name%>-<%=pkg.version%>.common <%=grunt.template.today("yyyy-mm-dd")%>*/\n'  
+            },  
+            my_target:{  
+               files:[{  
+                   expand:true,  
+                   //相对路径  
+                   cwd:'src/',  
+                   src:'**/*.js',  
+                   dest:'minsrc/'  
+                   // rename: function (dest, src) {  
+                   //     var folder = src.substring(0, src.lastIndexOf('/'));  
+                   //     var filename = src.substring(src.lastIndexOf('/'), src.length);  
+                   //     //  var filename=src;  
+                   //     filename = filename.substring(0, filename.lastIndexOf('.'));  
+                   //     var fileresult=dest + folder + filename + '.min.js';  
+                   //     grunt.log.writeln("现处理文件："+src+"  处理后文件："+fileresult);  
+                   //     return fileresult;  
+                   //     //return  filename + '.min.js';  
+                   // }  
+               }]  
+  
+            }  
+        },  
+        //htmlmin插件的配置信息  
+        htmlmin:{  
+            options: {  
+                removeComments: false, //移除注释  
+                removeCommentsFromCDATA: false,//移除来自字符数据的注释  
+                collapseWhitespace: true,//无用空格  
+                collapseBooleanAttributes: false,//失败的布尔属性  
+                removeAttributeQuotes: false,//移除属性引号      有些属性不可移走引号  
+                removeRedundantAttributes: false,//移除多余的属性  
+                useShortDoctype: false,//使用短的跟元素  
+                removeEmptyAttributes: false,//移除空的属性  
+                removeOptionalTags: false//移除可选附加标签  
+            },  
+            my_target:{  
+                files:[{  
+                    expand:true,  
+                    cwd:'src/',  
+                    src:'**/*.html',  
+                    dest:'minsrc/'  
+                }]  
+  
+            }  
+        },  
+        //watch插件的配置信息  
+        watch:{  
+            build:{  
+                files:['src/*.js','src/*.html'],  
+                tasks:['uglify','htmlmin'],  
+                options:{spawn:false}  
+            }  
+        }  
+  
+    });  
+    //告诉grunt我们将使用插件  
+    grunt.loadNpmTasks('grunt-contrib-uglify');  
+    grunt.loadNpmTasks('grunt-contrib-htmlmin');  
+    grunt.loadNpmTasks('grunt-contrib-watch');  
+    //告诉grunt当我们在终端中输入grunt时需要做些什么（注意先后顺序）  
+    grunt.registerTask('default',['uglify','htmlmin','watch']);  
+};  
